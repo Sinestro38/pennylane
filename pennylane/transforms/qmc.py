@@ -14,6 +14,15 @@
 """
 Contains the quantum_monte_carlo transform.
 """
+from functools import wraps
 
-def quantum_monte_carlo():
-    ...
+
+
+
+def quantum_monte_carlo(fn, estimation_wires):
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        fn(*args, **kwargs)
+
+    return wrapper
