@@ -70,7 +70,7 @@ def test_apply_controlled_v(n_wires):
     wires = range(n_wires)
     control_wire = n_wires
 
-    circ = lambda: _apply_controlled_v(rotation_wire=n_wires - 1, control_wire=control_wire)
+    circ = lambda: _apply_controlled_v(target_wire=n_wires - 1, control_wire=control_wire)
     u = get_unitary(circ, n_all_wires)
 
     # Note the sign flip in the following. The sign does not matter when performing the Q unitary
