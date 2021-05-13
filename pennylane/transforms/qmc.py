@@ -17,6 +17,7 @@ Contains the quantum_monte_carlo transform.
 from functools import wraps
 from pennylane import PauliX, Hadamard, MultiControlledX, CZ
 from pennylane.wires import Wires
+from pennylane.transforms import adjoint
 
 
 def _apply_controlled_z(wires, control_wire, work_wires):
@@ -63,6 +64,25 @@ def _apply_controlled_v(target_wire, control_wire):
         control_wire (int): the control wire from the register of phase estimation qubits
     """
     CZ(wires=[control_wire, target_wire])
+
+
+def apply_controlled_Q(fn, wires, target_wire, control_wire, work_wires):
+
+    fn_inv = adjoint(fn)
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        _apply_controlled_v(target_wire=target_wire, control_wire=control_wire)
+        fn_inv(*args, **kwargs)
+        _apply_controlled_z(wires=wires, control_wire=control_wire, work_wires=work_wires)
+        fn(*args, **kwargs)
+
+        _apply_controlled_v(target_wire=target_wire, control_wire=control_wire)
+        fn_inv(*args, **kwargs)
+        _apply_controlled_z(wires=wires, control_wire=control_wire, work_wires=work_wires)
+        fn(*args, **kwargs)
+
+    return wrapper
 
 
 def quantum_monte_carlo(fn, wires, target_wire, estimation_wires):
