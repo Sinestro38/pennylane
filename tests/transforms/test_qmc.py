@@ -61,8 +61,10 @@ def test_apply_controlled_z(n_wires):
     assert np.allclose(u, u_ideal)
 
 
-def test_apply_controlled_v():
-    n_wires = 2
+@pytest.mark.parametrize("n_wires", range(2, 5))
+def test_apply_controlled_v(n_wires):
+    """Test if the _apply_controlled_v performs the correct transformation by reconstructing the
+    unitary and comparing against the one provided in _make_V."""
     n_all_wires = n_wires + 1
 
     wires = range(n_wires)
@@ -71,6 +73,8 @@ def test_apply_controlled_v():
     circ = lambda: _apply_controlled_v(rotation_wire=n_wires - 1, control_wire=control_wire)
     u = get_unitary(circ, n_all_wires)
 
+    # Note the sign flip in the following. The sign does not matter when performing the Q unitary
+    # because two Vs are used.
     v_ideal = -_make_V(2 ** n_wires)
 
     circ = lambda: qml.ControlledQubitUnitary(v_ideal, wires=wires, control_wires=control_wire)
