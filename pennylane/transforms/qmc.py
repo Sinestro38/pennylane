@@ -15,8 +15,38 @@
 Contains the quantum_monte_carlo transform.
 """
 from functools import wraps
+from pennylane import PauliX, Hadamard, MultiControlledX
+from pennylane.wires import Wires
 
 
+def _apply_controlled_z(wires, control_wire, work_wires):
+    r"""Provides the circuit to apply a controlled version of the :math:`Z` gate defined in
+    `this <https://arxiv.org/pdf/1805.00109.pdf>`__ paper.
+
+    The multi-qubit gate :math:`Z = I - 2|0\rangle \langle 0|` can be performed using the
+    conventional multi-controlled-Z gate with an additional bit flip on each qubit before and after.
+
+    This function performs the multi-controlled-Z gate via a multi-controlled-X gate by picking an
+    arbitrary target wire to perform the X and adding a Hadamard on that wire either side of the
+    transformation.
+
+    Additional control from ``control_wire`` is then included within the multi-controlled-X gate.
+
+    Args:
+        wires (Union[Wires, Sequence[int], or int]): the wires on which the Z gate is applied
+        control_wire (int): the control wire from the register of phase estimation qubits
+        work_wires (Union[Wires, Sequence[int], or int]): the work wires used in the decomposition
+    """
+    target_wire = wires[0]
+    PauliX(target_wire)
+    Hadamard(target_wire)
+
+    control_values = "0" * (len(wires) - 1) + "1"
+    control_wires = Wires(wires[1:]) + control_wire
+    MultiControlledX(control_wires=control_wires, wires=target_wire, control_values=control_values, work_wires=work_wires)
+
+    Hadamard(target_wire)
+    PauliX(target_wire)
 
 
 def quantum_monte_carlo(fn, estimation_wires):
