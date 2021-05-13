@@ -15,7 +15,7 @@
 Contains the quantum_monte_carlo transform.
 """
 from functools import wraps
-from pennylane import PauliX, Hadamard, MultiControlledX
+from pennylane import PauliX, Hadamard, MultiControlledX, CZ
 from pennylane.wires import Wires
 
 
@@ -47,6 +47,10 @@ def _apply_controlled_z(wires, control_wire, work_wires):
 
     Hadamard(target_wire)
     PauliX(target_wire)
+
+
+def _apply_controlled_v(rotation_wire, control_wire):
+    CZ(wires=[control_wire, rotation_wire])
 
 
 def quantum_monte_carlo(fn, estimation_wires):
